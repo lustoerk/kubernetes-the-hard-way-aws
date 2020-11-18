@@ -1,0 +1,11 @@
+---
+- name: Create NW Resources
+  cloudformation:
+    stack_name: "vpc-stack-{{ clustername }}"
+    state: "{{ state }}"
+    region: "{{ region }}"
+    template: "../files/vpc-template.yaml"
+  register: vpc_output
+
+- debug:
+    var: vpc_output.stack_outputs

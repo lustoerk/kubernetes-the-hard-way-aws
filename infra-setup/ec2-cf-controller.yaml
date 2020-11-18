@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkStackName:
+    Type: 'String'
+    Default: "nw-stack"
+Resources:
+  Controller0:
+    Type: 'AWS::EC2::Instance'
+    Properties: 
+        ImageId: ami-0d359437d1756caa8
+        KeyName: L8s
+        InstanceType: t3.micro
+        UserData: "bmFtZT1jb250cm9sbGVyLTAK"
+        SourceDestCheck: "false"  
+        BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: "true"
+            DeviceIndex: "0"
+            SubnetId: 
+                Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SubnetID"
+            PrivateIpAddress: 10.0.1.10
+            GroupSet:
+              - Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SGID"
+        Tags:
+          - Key: Name
+            Value: L8s-EC2-C1
+  Controller1:
+    Type: 'AWS::EC2::Instance'
+    Properties: 
+        ImageId: ami-0d359437d1756caa8
+        KeyName: L8s
+        InstanceType: t3.micro
+        UserData: "bmFtZT1jb250cm9sbGVyLTEK"
+        SourceDestCheck: "false"
+        BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: "true"
+            DeviceIndex: "0"
+            SubnetId: 
+                Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SubnetID"
+            PrivateIpAddress: 10.0.1.11
+            GroupSet:
+              - Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SGID"
+        Tags:
+          - Key: Name
+            Value: L8s-EC2-C2
+  Controller2:
+    Type: 'AWS::EC2::Instance'
+    Properties: 
+        ImageId: ami-0d359437d1756caa8
+        KeyName: L8s
+        InstanceType: t3.micro
+        UserData: "bmFtZT1jb250cm9sbGVyLTIK"
+        SourceDestCheck: "false"
+        BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: "true"
+            DeviceIndex: "0"
+            SubnetId: 
+                Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SubnetID"
+            PrivateIpAddress: 10.0.1.12
+            GroupSet:
+              - Fn::ImportValue:
+                  Fn::Sub: "${NetworkStackName}-SGID"
+        Tags:
+          - Key: Name
+            Value: L8s-EC2-C3           

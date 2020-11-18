@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  myVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: dedicated
+      Tags:
+        - Key: Name
+          Value: L8s-VPC
+  mySubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: eu-central-1a
+      Tags:
+        - Key: Name
+          Value: L8s-Subnet
+  myIGW:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: L8s-IGW
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref myVPC
+      InternetGatewayId: !Ref myIGW
+  myRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: L8s-RT
+  myRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: myIGW
+    Properties:
+      RouteTableId: !Ref myRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref myIGW
+  mySubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref mySubnet
+      RouteTableId: !Ref myRouteTable
+  mySG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow K8s Stuff
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: L8s-SG
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 10.0.0.0/16
+        - IpProtocol: -1
+          CidrIp: 10.200.0.0/16
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6443
+          ToPort: 6443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+Outputs:
+  myVPCID:
+    Value: !Ref myVPC
+    Export: 
+      Name: 
+        Fn::Sub: "${AWS::StackName}-VPCID"
+  mySubnetID:
+    Value: !Ref mySubnet
+    Export:
+      Name: 
+        Fn::Sub: "${AWS::StackName}-SubnetID"
+  mySecurityGroupID:
+    Value: !Ref mySG
+    Export:
+      Name: 
+        Fn::Sub: "${AWS::StackName}-SGID"

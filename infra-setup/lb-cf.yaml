@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkStackName:
+    Type: 'String'
+    Default: "nw-stack"
+Resources:
+  myNWLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: myNWLB
+      Scheme: internet-facing
+      Subnets: 
+        - Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-SubnetID"
+      Type: network
+      Tags:
+        - Key: Name
+          Value: L8s-NWLB
+  myNWLBTG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: myNWLBTG 
+      Port: 6443
+      Protocol: TCP
+      VpcId: 
+        Fn::ImportValue: 
+          Fn::Sub: "${NetworkStackName}-VPCID"
+      Targets:
+      - Id: 10.0.1.10
+        Port: 6443
+      - Id: 10.0.1.11
+        Port: 6443
+      - Id: 10.0.1.12
+        Port: 6443
+      Tags:
+        - Key: Name
+          Value: L8s-NWLB-TG 
+  myNWLBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref myNWLBTG
+      LoadBalancerArn: !Ref myNWLB
+      Port: '443'
+      Protocol: TCP
+
+#Terra10NetworkLoadBalancerListenerCert:
+#  Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+#  Properties:
+#    Certificates:
+#      - CertificateArn: arn:aws:acm:eu-west-1:xxxaccountxxx:certificate/123456....
+#    ListenerArn: !Ref Terra10NetworkLoadBalancerListener
